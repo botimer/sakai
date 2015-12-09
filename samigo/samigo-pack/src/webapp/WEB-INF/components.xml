@@ -196,6 +196,7 @@
         <bean class="org.sakaiproject.tool.assessment.facade.AssessmentGradingFacadeQueries">
           <property name="sessionFactory"><ref bean="org.sakaiproject.springframework.orm.hibernate.GlobalSessionFactory"/></property>
           <property name="contentHostingService" ref="org.sakaiproject.content.api.ContentHostingService"/>
+          <property name="securityService" ref="org.sakaiproject.authz.api.SecurityService"/>
           <property name="userDirectoryService" ref="org.sakaiproject.user.api.UserDirectoryService"/>
           <property name="persistenceHelper" ref="persistenceHelper"/>
 	</bean>
