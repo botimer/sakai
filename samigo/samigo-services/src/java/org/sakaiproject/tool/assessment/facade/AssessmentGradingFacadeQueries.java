@@ -748,7 +748,7 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 					chsMedia = contentHostingService.updateResource(mediaPath, mediaData.getMimeType(), mediaData.getMedia());
 				}
 				// Free the byte array since it has been stored in content. Hold the new ContentResource
-				mediaData.setMedia(null);
+				mediaData.setDbMedia(null);
 				mediaData.setContentResource(chsMedia);
 				return mediaPath;
 			} catch (Exception e) {
@@ -920,7 +920,7 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 
     // Only try to read from Content Hosting if this isn't a link and
     // there is no media content in the database 
-    if (mediaData.getLocation() != null && mediaData.getMedia() == null) {
+    if (mediaData.getLocation() == null && mediaData.getDbMedia() == null) {
     	mediaData.setContentResource(getMediaContentResource(mediaData));
     }
     return mediaData;

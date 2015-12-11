@@ -145,7 +145,7 @@ public class MediaData implements Serializable {
 	public byte[] getMedia() {
 		if (media == null && contentResource != null) {
 			try {
-				media = contentResource.getContent();
+				return contentResource.getContent();
 			} catch (ServerOverloadException e) {
 				return null;
 			}
@@ -154,6 +154,14 @@ public class MediaData implements Serializable {
 	}
 
 	public void setMedia(byte[] media) {
+		this.media = media;
+	}
+
+	public byte[] getDbMedia() {
+		return media;
+	}
+
+	public void setDbMedia(byte[] media) {
 		this.media = media;
 	}
 
