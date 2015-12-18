@@ -816,7 +816,7 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
     while (retryCount > 0){ 
       try {
         saveMediaToContent(mediaData);
-        getHibernateTemplate().save(mediaData);
+        getHibernateTemplate().saveOrUpdate(mediaData);
         retryCount = 0;
       }
       catch (Exception e) {
@@ -1053,6 +1053,47 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
     	}
   }
   
+	public List<Long> getMediaConversionBatch() {
+		final HibernateCallback<List<Long>> hcb = new HibernateCallback<List<Long>>() {
+			public List<Long> doInHibernate(Session session) throws HibernateException, SQLException {
+				Query q = session.createQuery("SELECT id FROM MediaData WHERE dbMedia IS NOT NULL AND location IS NULL");
+				return q.list();
+			}
+		};
+		return getHibernateTemplate().execute(hcb);
+	}
+
+	public boolean markMediaForConversion(Long mediaId) {
+		final HibernateCallback hcb = new HibernateCallback() {
+			public Integer doInHibernate(Session session) throws HibernateException, SQLException {
+				Query q = session.createQuery("UPDATE MediaData SET location = 'CONVERTING' WHERE id = ?");
+				q.setLong(0, mediaId);
+				return q.executeUpdate();
+			}
+		};
+		return getHibernateTemplate().execute(hcb).equals(1);
+	}
+
+	public List<Long> getMediaWithDataAndLocation() {
+		final HibernateCallback<List<Long>> hcb = new HibernateCallback<List<Long>>() {
+			public List<Long> doInHibernate(Session session) throws HibernateException, SQLException {
+				Query q = session.createQuery("SELECT id FROM MediaData WHERE dbMedia IS NOT NULL AND location IS NOT NULL");
+				return q.list();
+			}
+		};
+		return getHibernateTemplate().execute(hcb);
+	}
+
+	public List<Long> getMediaInConversion() {
+		final HibernateCallback<List<Long>> hcb = new HibernateCallback<List<Long>>() {
+			public List<Long> doInHibernate(Session session) throws HibernateException, SQLException {
+				Query q = session.createQuery("SELECT id FROM MediaData WHERE location = 'CONVERTING'");
+				return q.list();
+			}
+		};
+		return getHibernateTemplate().execute(hcb);
+	}
+
   public ItemGradingData getLastItemGradingDataByAgent(
       final Long publishedItemId, final String agentId)
   {
