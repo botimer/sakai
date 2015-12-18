@@ -144,8 +144,8 @@ public interface AssessmentGradingFacadeQueriesAPI
   /** Sanity check for Media objects left in the converting state */
   public List<Long> getMediaInConversion();
 
-  /** Mark a specific Media object as being converted */
-  public boolean markMediaForConversion(Long mediaId);
+  /** Mark a list of Media objects as being converted */
+  public boolean markMediaForConversion(List<Long> mediaIds);
   
   public ItemGradingData getLastItemGradingDataByAgent(Long publishedItemId,
       String agentId);

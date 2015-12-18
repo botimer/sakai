@@ -74,6 +74,7 @@ public class MediaContentConverter {
 			}
 		} else {
 			while (!ids.isEmpty()) {
+				gq.markMediaForConversion(ids);
 				for (Long mediaId : ids) {
 					convertMedia(mediaId);
 				}
@@ -87,8 +88,8 @@ public class MediaContentConverter {
 
 	private void convertMedia(Long mediaId) {
 		try {
-			if (gq.markMediaForConversion(mediaId)) {
-				MediaData mediaData = gq.getMedia(mediaId);
+			MediaData mediaData = gq.getMedia(mediaId);
+			if ("CONVERTING".equals(mediaData.getLocation())) {
 				mediaData.setLocation(null);
 				gq.saveMedia(mediaData);
 				log.debug("MediaData converted with ID: " + mediaId);

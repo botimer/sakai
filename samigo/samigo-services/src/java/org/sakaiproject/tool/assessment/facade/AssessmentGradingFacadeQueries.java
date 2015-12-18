@@ -1057,21 +1057,22 @@ public class AssessmentGradingFacadeQueries extends HibernateDaoSupport implemen
 		final HibernateCallback<List<Long>> hcb = new HibernateCallback<List<Long>>() {
 			public List<Long> doInHibernate(Session session) throws HibernateException, SQLException {
 				Query q = session.createQuery("SELECT id FROM MediaData WHERE dbMedia IS NOT NULL AND location IS NULL");
+				q.setMaxResults(10);
 				return q.list();
 			}
 		};
 		return getHibernateTemplate().execute(hcb);
 	}
 
-	public boolean markMediaForConversion(Long mediaId) {
+	public boolean markMediaForConversion(List<Long> mediaIds) {
 		final HibernateCallback hcb = new HibernateCallback() {
 			public Integer doInHibernate(Session session) throws HibernateException, SQLException {
-				Query q = session.createQuery("UPDATE MediaData SET location = 'CONVERTING' WHERE id = ?");
-				q.setLong(0, mediaId);
+				Query q = session.createQuery("UPDATE MediaData SET location = 'CONVERTING' WHERE id in (:ids)");
+				q.setParameterList("ids", mediaIds);
 				return q.executeUpdate();
 			}
 		};
-		return getHibernateTemplate().execute(hcb).equals(1);
+		return getHibernateTemplate().execute(hcb).equals(mediaIds.size());
 	}
 
 	public List<Long> getMediaWithDataAndLocation() {
