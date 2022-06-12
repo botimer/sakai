@@ -19,6 +19,8 @@
 		<property name="properties">
 			<bean class="org.sakaiproject.component.impl.DynamicDefaultSakaiProperties" init-method="init"/>
 		</property>
+		<property name="propertyPlaceholderConfigurer" ref="org.sakaiproject.component.PropertyPlaceholderConfigurer"/>
+		<property name="propertyOverrideConfigurer" ref="org.sakaiproject.component.ReversiblePropertyOverrideConfigurer"/>
 		<property name="locations">
 			<list>
 				<value>classpath:/org/sakaiproject/config/kernel.properties</value>
@@ -31,6 +33,17 @@
 			themselves be overridden or preceded by another instance of the class.
 		 -->
 		<property name="order" value="1"/>
+	</bean>
+
+	<bean id="org.sakaiproject.component.PropertyPlaceholderConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+		<property name="order" value="0"/>
+	</bean>
+
+	<bean id="org.sakaiproject.component.ReversiblePropertyOverrideConfigurer" class="org.sakaiproject.util.ReversiblePropertyOverrideConfigurer">
+		<property name="beanNameAtEnd" value="true"/>
+		<property name="beanNameSeparator" value="0"/>
+		<property name="ignoreInvalidKeys" value="true"/>
 	</bean>
 
 	<!-- Certain Sakai properties need to be exposed as Java system properties to support legacy code. -->

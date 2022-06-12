@@ -25,13 +25,12 @@ package org.sakaiproject.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -60,20 +59,22 @@ import lombok.extern.slf4j.Slf4j;
 public class SakaiProperties implements BeanFactoryPostProcessorCreator, InitializingBean {
     private SakaiPropertiesFactoryBean propertiesFactoryBean = new SakaiPropertiesFactoryBean();
     //private PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
-    private ReversiblePropertyOverrideConfigurer propertyOverrideConfigurer = new ReversiblePropertyOverrideConfigurer();
-    private PropertyPlaceholderConfigurer propertyPlaceholderConfigurer = new PropertyPlaceholderConfigurer();
+    @Getter
+    @Setter
+    private ReversiblePropertyOverrideConfigurer propertyOverrideConfigurer;
+    @Getter
+    @Setter
+    private PropertyPlaceholderConfigurer propertyPlaceholderConfigurer;
 
     public SakaiProperties() {
         // Set defaults.
         propertiesFactoryBean.setIgnoreResourceNotFound(true);
-        propertyPlaceholderConfigurer.setIgnoreUnresolvablePlaceholders(true);
-        propertyPlaceholderConfigurer.setOrder(0);
-        propertyOverrideConfigurer.setBeanNameAtEnd(true);
-        propertyOverrideConfigurer.setBeanNameSeparator("@");
-        propertyOverrideConfigurer.setIgnoreInvalidKeys(true);
     }
 
     public void afterPropertiesSet() throws Exception {
+        if (propertyOverrideConfigurer == null || propertyPlaceholderConfigurer == null)
+            throw new FatalBeanException("SakaiProperties must have the overrider and placeholder configurers injected. See sakai-configuration.xml.");
+
         // Connect properties to configurers.
         propertiesFactoryBean.afterPropertiesSet();
         propertyPlaceholderConfigurer.setProperties((Properties)propertiesFactoryBean.getObject());
@@ -84,7 +85,7 @@ public class SakaiProperties implements BeanFactoryPostProcessorCreator, Initial
      * @see org.sakaiproject.util.BeanFactoryPostProcessorCreator#getBeanFactoryPostProcessors()
      */
     public Collection<BeanFactoryPostProcessor> getBeanFactoryPostProcessors() {
-        return (Arrays.asList(new BeanFactoryPostProcessor[] {propertyOverrideConfigurer, propertyPlaceholderConfigurer}));
+        return Collections.emptyList();
     }
 
     /**
