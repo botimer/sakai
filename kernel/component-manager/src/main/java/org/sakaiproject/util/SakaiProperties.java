@@ -54,11 +54,18 @@ import lombok.extern.slf4j.Slf4j;
  * 
  * SakaiProperties configuration supports most of the properties documented for 
  * PropertiesFactoryBean, PropertyPlaceholderConfigurer, and PropertyOverrideConfigurer.
+ *
+ * SakaiProperties is in an intermediate state. The two configurers are now registered as beans,
+ * but they do not have access to these, the real, raw properties by default. They need to be
+ * connected, and that happens in the {@link PropertyFixerUpper}. If we can determine that the
+ * giant proxy interface on this class is not used anywhere, we could finish the inversion,
+ * injecting this object into them (setting the "properties" property as ref to this bean).
+ * Then they would function as normal BeanFactoryPostProcessors, and the Fixer Upper can go away.
  */
 @Slf4j
 public class SakaiProperties implements BeanFactoryPostProcessorCreator, InitializingBean {
+    @Getter
     private SakaiPropertiesFactoryBean propertiesFactoryBean = new SakaiPropertiesFactoryBean();
-    //private PropertiesFactoryBean propertiesFactoryBean = new PropertiesFactoryBean();
     @Getter
     @Setter
     private ReversiblePropertyOverrideConfigurer propertyOverrideConfigurer;
@@ -75,10 +82,7 @@ public class SakaiProperties implements BeanFactoryPostProcessorCreator, Initial
         if (propertyOverrideConfigurer == null || propertyPlaceholderConfigurer == null)
             throw new FatalBeanException("SakaiProperties must have the overrider and placeholder configurers injected. See sakai-configuration.xml.");
 
-        // Connect properties to configurers.
         propertiesFactoryBean.afterPropertiesSet();
-        propertyPlaceholderConfigurer.setProperties((Properties)propertiesFactoryBean.getObject());
-        propertyOverrideConfigurer.setProperties((Properties)propertiesFactoryBean.getObject());
     }
 
     /* (non-Javadoc)

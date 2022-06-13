@@ -46,6 +46,11 @@
 		<property name="ignoreInvalidKeys" value="true"/>
 	</bean>
 
+	<!-- Because of the indirection around the SakaiProperties object, the two configurers cannot function directly. -->
+	<!-- We need yet another BeanFactoryPostProcessor to hook the lifecycle event, connect them to the underlying    -->
+	<!-- properties on SakaiProperties, and invoke their post-processing yet again.                                  -->
+	<bean id="org.sakaiproject.util.PropertyFixerUpper" class="org.sakaiproject.util.PropertyFixerUpper"/>
+
 	<!-- Certain Sakai properties need to be exposed as Java system properties to support legacy code. -->
 	<bean id="org.sakaiproject.component.SakaiPropertyPromoter" class="org.sakaiproject.util.SakaiPropertyPromoter" init-method="init">
 		<property name="sakaiProperties" ref="org.sakaiproject.component.SakaiProperties"/>
