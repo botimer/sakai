@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:util="http://www.springframework.org/schema/util"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!--
+	  This is the central configuration file for Sakai, mostly used to load properties files.
+	  Individual Sakai installations can add a supplemental "sakai-configuration.xml" file to
+	  their "sakai.home" directory (which is "$CATALINA_HOME/sakai/" by default). Currently
+	  the most common use for a local "sakai-configuration.xml" is to change which properties
+	  files are read at start-up. To do so, paste an edited version of the
+	  "org.sakaiproject.component.SakaiProperties" bean definition into your local file,
+	  keeping the "parent" part of the definition in place.
+	-->
+
+	<!-- An abstract parent SakaiProperties is used to set up defaults. -->
+<!--	<bean id="systemPropertySources" class="org.springframework.core.env.MutablePropertySources">-->
+<!--		<property name="locations">-->
+<!--			<list>-->
+<!--				<value>classpath:org/sakaiproject/config/kernel.properties</value>-->
+<!--				<value>classpath:org/sakaiproject/config/bundle/default.sakai.properties</value>-->
+<!--			</list>-->
+<!--		</property>-->
+<!--	</bean>-->
+
+	<!-- We absolutely must have sakai.home for the first pass to work. We never want to read directories with -->
+	<!-- literal placeholders in them. It's fine if the files are missing, but sakai.home is too special to ever get -->
+	<!-- through the kernel and default properties as empty. -->
+	<bean class="org.sakaiproject.modi.SakaiHomeCheck">
+		<property name="order" value="10"/>
+	</bean>
+
+	<!-- Load up the kernel properties. There are no placeholders there, so we operate in strict mode. -->
+	<!-- We do NOT load default.sakai.properties (from the config bundle), which is strictly documentation. -->
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+		<property name="order" value="20"/>
+		<!-- FIXME: take this out; just here for some basic testing in this file itself -->
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+		<property name="locations">
+			<list>
+				<value>classpath:org/sakaiproject/config/kernel.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<!-- Load up the merged property files from the standard, optional locations. We ignore them if any are missing. -->
+	<!-- We use our thin subclass of PropertySourcePlaceholderConfigurer to be able to dump the raw properties for -->
+	<!-- diagnostics and externalized storage. See BasicConfigurationService and SakaiPropertiesShim.rawProperties. -->
+	<bean id="optionalProperties" class="org.sakaiproject.modi.FileMappedProperties">
+		<property name="order" value="30"/>
+		<property name="ignoreResourceNotFound" value="true"/>
+		<property name="ignoreUnresolvablePlaceholders" value="true"/>
+		<property name="locations">
+			<list>
+<!--				<value>file:${sakai.home}/placeholder.properties</value>-->
+<!--				<value>file:${sakai.home}/sakai.properties</value>-->
+<!--				<value>file:${sakai.home}/local.properties</value>-->
+<!--				<value>file:${sakai.security}/security.properties</value>-->
+<!--				<value>file:${sakai.test}/test.properties</value>-->
+				<!-- FIXME: move this to a file only loaded in test, for inheritance -->
+				<value>file:${sakai.home}/testing.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="org.sakaiproject.component.DefaultSakaiProperties" abstract="true" class="org.sakaiproject.modi.SakaiPropertiesShim">
+		<constructor-arg ref="optionalProperties"/>
+	</bean>
+
+	<bean id="org.sakaiproject.component.SakaiProperties" parent="org.sakaiproject.component.DefaultSakaiProperties">
+	</bean>
+
+	<!-- FIXME: move this to a file only loaded in test, for inheritance -->
+	<bean id="stubbyBean" class="org.sakaiproject.modi.StubbyStub">
+		<property name="somethingFromKernelProps" value="${kernel.test.key}"/>
+		<property name="somethingFromCustomFile" value="${placeholder.test}"/>
+		<property name="autoDdl" value="${auto.ddl}"/>
+	</bean>
+
+</beans>
